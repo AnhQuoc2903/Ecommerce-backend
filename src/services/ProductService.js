@@ -109,14 +109,25 @@ const getDetailsProduct = (id) => {
   });
 };
 
-const getAllProduct = () => {
+const getAllProduct = (limit = 8, page = 0) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const allProduct = await Product.find();
+      if (limit <= 0 || page < 0) {
+        throw new Error(
+          "Limit must be greater than 0 and page must be 0 or greater."
+        );
+      }
+      const totalProduct = await Product.countDocuments();
+      const allProduct = await Product.find()
+        .limit(Number(limit))
+        .skip(Number(page) * Number(limit));
       resolve({
         status: "OK",
         message: "Success",
         data: allProduct,
+        total: totalProduct,
+        pageCurrent: Number(page + 1),
+        totalPage: Math.ceil(totalProduct / limit),
       });
     } catch (e) {
       reject(e);
