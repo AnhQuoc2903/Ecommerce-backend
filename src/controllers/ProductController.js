@@ -78,8 +78,8 @@ const getAllProduct = async (req, res) => {
   try {
     const { limit, page } = req.query;
     const response = await ProductService.getAllProduct(
-      Number(limit),
-      Number(page)
+      Number(limit) || 8,
+      Number(page) || 0
     );
     return res.status(200).json(response);
   } catch (e) {
