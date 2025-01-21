@@ -109,7 +109,7 @@ const getDetailsProduct = (id) => {
   });
 };
 
-const getAllProduct = (limit, page) => {
+const getAllProduct = (limit, page, sort, filter) => {
   return new Promise(async (resolve, reject) => {
     try {
       if (limit <= 0 || page < 0) {
@@ -118,9 +118,44 @@ const getAllProduct = (limit, page) => {
         );
       }
       const totalProduct = await Product.countDocuments();
+      if (filter) {
+        const label = filter[0];
+        const allProductFilter = await Product.find({
+          [label]: { $regex: filter[1] },
+        })
+          .limit(Number(limit))
+          .skip(Number(page) * Number(limit));
+        resolve({
+          status: "OK",
+          message: "Success",
+          data: allProductFilter,
+          total: totalProduct,
+          pageCurrent: Number(page + 1),
+          totalPage: Math.ceil(totalProduct / limit),
+        });
+      }
+      if (sort) {
+        const objectSort = {};
+        objectSort[sort[1]] = sort[0];
+        const allProductSort = await Product.find()
+          .limit(Number(limit))
+          .skip(Number(page) * Number(limit))
+          .sort(objectSort);
+        resolve({
+          status: "OK",
+          message: "Success",
+          data: allProductSort,
+          total: totalProduct,
+          pageCurrent: Number(page + 1),
+          totalPage: Math.ceil(totalProduct / limit),
+        });
+      }
       const allProduct = await Product.find()
         .limit(Number(limit))
-        .skip(Number(page) * Number(limit));
+        .skip(Number(page) * Number(limit))
+        .sort({
+          name: sort === "asc" || sort === "desc" ? sort : "asc",
+        });
       resolve({
         status: "OK",
         message: "Success",
