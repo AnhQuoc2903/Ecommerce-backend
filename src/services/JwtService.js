@@ -35,10 +35,9 @@ const refreshTokenJwtService = (token) => {
             message: "The authentication",
           });
         }
-        const { payload } = user;
         const access_token = await generateAccessToken({
-          id: payload?.id,
-          isAdmin: payload?.isAdmin,
+          id: user?.id,
+          isAdmin: user?.isAdmin,
         });
         resolve({
           status: "OK",

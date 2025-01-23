@@ -1,32 +1,35 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-const routes = require("./routes");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const routes = require("./routes");
 
 dotenv.config();
-require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+app.use(express.json());
 app.use(cookieParser());
-app.use(bodyParser.json());
 
 routes(app);
 
 mongoose
-  .connect(`${process.env.MONGO_DB}`)
-  .then(() => {
-    console.log("Connect Db success!");
+  .connect(process.env.MONGO_DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
-  .catch((err) => {
-    console.log("Database connection failed:", err);
-  });
+  .then(() => console.log("Connect Db success!"))
+  .catch((err) => console.error("Database connection failed:", err));
 
+// Khởi động server
 app.listen(port, () => {
-  console.log("Server is running on port:", port);
+  console.log(`Server is running on port: ${port}`);
 });
