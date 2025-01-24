@@ -1,9 +1,10 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
 const routes = require("./routes");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(bodyParser.json());
 
 routes(app);
 
@@ -29,7 +31,6 @@ mongoose
   .then(() => console.log("Connect Db success!"))
   .catch((err) => console.error("Database connection failed:", err));
 
-// Khởi động server
 app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
 });

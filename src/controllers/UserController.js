@@ -128,8 +128,6 @@ const getDetailsUser = async (req, res) => {
 };
 
 const refreshToken = async (req, res) => {
-  console.log("req.cookies?.refresh_token", req?.cookies?.refresh_token);
-
   try {
     const token = req?.cookies?.refresh_token;
 
@@ -144,7 +142,21 @@ const refreshToken = async (req, res) => {
 
     return res.status(200).json(response);
   } catch (e) {
-    console.error("Error in refreshToken:", e);
+    return res.status(404).json({
+      status: "ERR",
+      message: e.message || "An unexpected error occurred.",
+    });
+  }
+};
+
+const logoutUser = async (req, res) => {
+  try {
+    res.clearCookie("refresh_token");
+    return res.status(200).json({
+      status: "OK",
+      message: "Logout successfully",
+    });
+  } catch (e) {
     return res.status(404).json({
       status: "ERR",
       message: e.message || "An unexpected error occurred.",
@@ -160,5 +172,5 @@ module.exports = {
   getAllUser,
   getDetailsUser,
   refreshToken,
-  logOutUser,
+  logoutUser,
 };
