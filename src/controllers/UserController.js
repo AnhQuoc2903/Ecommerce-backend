@@ -74,6 +74,8 @@ const updateUser = async (req, res) => {
     }
 
     if (data.phone) {
+      data.phone = String(data.phone);
+
       const phoneRegex = /^0\d{9}$/;
 
       if (!/^\d*$/.test(data.phone)) {
