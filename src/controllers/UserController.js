@@ -3,7 +3,7 @@ const JwtService = require("../services/JwtService");
 
 const createUser = async (req, res) => {
   try {
-    const { name, email, password, confirmPassword, phone } = req.body;
+    const { email, password, confirmPassword } = req.body;
     const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const isCheckEmail = reg.test(email);
     if (!email || !password || !confirmPassword) {
@@ -65,17 +65,46 @@ const updateUser = async (req, res) => {
   try {
     const userId = req.params.id;
     const data = req.body;
+
     if (!userId) {
-      return res.status(200).json({
+      return res.status(400).json({
         status: "ERR",
         message: "The userId is required",
       });
     }
+
+    if (data.phone) {
+      const phoneRegex = /^0\d{9}$/;
+
+      if (!/^\d*$/.test(data.phone)) {
+        return res.status(400).json({
+          status: "ERR",
+          message: "Số điện thoại chỉ được chứa số!",
+        });
+      }
+
+      if (data.phone.length !== 10) {
+        return res.status(400).json({
+          status: "ERR",
+          message: "Số điện thoại phải có đúng 10 số!",
+        });
+      }
+
+      if (!phoneRegex.test(data.phone)) {
+        return res.status(400).json({
+          status: "ERR",
+          message: "Số điện thoại phải bắt đầu bằng số 0!",
+        });
+      }
+    }
+
     const response = await UserService.updateUser(userId, data);
     return res.status(200).json(response);
   } catch (e) {
-    return res.status(404).json({
-      message: e,
+    return res.status(500).json({
+      status: "ERR",
+      message: "Internal Server Error",
+      error: e.message,
     });
   }
 };
