@@ -5,13 +5,14 @@ const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {
     const { name, image, type, price, countInStock, rating, description } =
       newProduct;
+
     try {
       const checkProduct = await Product.findOne({
         name: name,
       });
       if (checkProduct !== null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The name of product is already",
         });
       }
