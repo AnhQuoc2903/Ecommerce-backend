@@ -110,7 +110,7 @@ const deleteUser = (id) => {
       });
       if (checkUser === null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The user is not defined",
         });
       }
@@ -148,7 +148,7 @@ const getDetailsUser = (id) => {
       });
       if (user === null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The user is not defined",
         });
       }

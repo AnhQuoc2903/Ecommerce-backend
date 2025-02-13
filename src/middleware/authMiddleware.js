@@ -9,7 +9,7 @@ const authMiddleWare = (req, res, next) => {
     if (err) {
       return res.status(404).json({
         status: "ERROR",
-        message: "The authentication",
+        message: "The authentication rr",
       });
     }
     if (user?.isAdmin) {
