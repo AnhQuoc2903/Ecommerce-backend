@@ -1,5 +1,5 @@
 const Product = require("../models/ProductModel");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {

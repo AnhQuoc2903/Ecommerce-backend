@@ -12,7 +12,7 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.0",
     "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -24,5 +24,8 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "nodemon": "^3.1.9"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }
