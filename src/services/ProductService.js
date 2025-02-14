@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 
 const createProduct = (newProduct) => {
   return new Promise(async (resolve, reject) => {
-    const { name, image, type, price, countInStock, rating, description } =
+    const { name, images, type, price, countInStock, rating, description } =
       newProduct;
 
     try {
@@ -18,7 +18,7 @@ const createProduct = (newProduct) => {
       }
       const newProduct = await Product.create({
         name,
-        image,
+        images,
         type,
         price,
         countInStock,
@@ -46,7 +46,7 @@ const updateProduct = (id, data) => {
       });
       if (checkProduct === null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The product is not defined",
         });
       }
@@ -72,11 +72,25 @@ const deleteProduct = (id) => {
       });
       if (checkProduct === null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The product is not defined",
         });
       }
       await Product.findByIdAndDelete(id);
+      resolve({
+        status: "OK",
+        message: "Delete product Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const deleteManyProduct = (ids) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await Product.deleteMany({ _id: ids });
       resolve({
         status: "OK",
         message: "Delete product Success",
@@ -124,7 +138,7 @@ const getAllProduct = (limit, page, sort, filter) => {
       const sortOption = sort ? { [sort[1]]: sort[0] } : { name: "asc" };
 
       const allProduct = await Product.find(query)
-        .limit(Number(limit))
+
         .skip(Number(page) * Number(limit))
         .sort(sortOption);
 
@@ -148,4 +162,5 @@ module.exports = {
   deleteProduct,
   getDetailsProduct,
   getAllProduct,
+  deleteManyProduct,
 };
