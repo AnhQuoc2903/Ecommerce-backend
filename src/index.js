@@ -17,13 +17,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
-
 const allowedOrigins = [
   "http://localhost:3000",
   "https://shopp-ltlt1.vercel.app",
