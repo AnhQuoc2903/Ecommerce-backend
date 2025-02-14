@@ -26,7 +26,7 @@ app.use(
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://shopp-ltlt.vercel.app",
+  "https://shopp-ltlt1.vercel.app",
 ];
 
 app.use(
