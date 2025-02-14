@@ -110,11 +110,25 @@ const deleteUser = (id) => {
       });
       if (checkUser === null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The user is not defined",
         });
       }
       await User.findByIdAndDelete(id);
+      resolve({
+        status: "OK",
+        message: "Delete uer Success",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+const deleteManyUser = (ids) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await User.deleteMany({ _id: ids });
       resolve({
         status: "OK",
         message: "Delete uer Success",
@@ -148,7 +162,7 @@ const getDetailsUser = (id) => {
       });
       if (user === null) {
         resolve({
-          status: "OK",
+          status: "ERR",
           message: "The user is not defined",
         });
       }
@@ -170,4 +184,5 @@ module.exports = {
   deleteUser,
   getAllUser,
   getDetailsUser,
+  deleteManyUser,
 };
