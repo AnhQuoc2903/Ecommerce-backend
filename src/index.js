@@ -17,6 +17,14 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+app.use(
+  cors({
+    origin: "https://shop-small-henna.vercel.app",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
+
 routes(app);
 
 mongoose
