@@ -17,24 +17,6 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://shopp-ltlt1.vercel.app",
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
-
 routes(app);
 
 mongoose
