@@ -17,10 +17,20 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://ecommerce-fontend-b7cx.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://shop-small-henna.vercel.app",
-    methods: "GET,POST,PUT,DELETE",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
