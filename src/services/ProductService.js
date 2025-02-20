@@ -124,36 +124,49 @@ const getDetailsProduct = (id) => {
   });
 };
 
-const getAllProduct = (limit, page, sort, filter) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (limit <= 0 || page < 0) {
-        throw new Error(
-          "Limit must be greater than 0 and page must be 0 or greater."
-        );
-      }
+const getAllProduct = async (limit = 10, page = 0, sort, filter) => {
+  try {
+    const totalProduct = await Product.countDocuments();
+    let query = Product.find();
 
-      const totalProduct = await Product.countDocuments();
-      const query = filter ? { [filter[0]]: { $regex: filter[1] } } : {};
-      const sortOption = sort ? { [sort[1]]: sort[0] } : { name: "asc" };
-
-      const allProduct = await Product.find(query)
-
-        .skip(Number(page) * Number(limit))
-        .sort(sortOption);
-
-      resolve({
-        status: "OK",
-        message: "Success",
-        data: allProduct,
-        total: totalProduct,
-        pageCurrent: Number(page + 1),
-        totalPage: Math.ceil(totalProduct / limit),
-      });
-    } catch (e) {
-      reject(e);
+    if (filter) {
+      const label = filter[0];
+      query = query.find({ [label]: { $regex: new RegExp(filter[1], "i") } });
     }
-  });
+
+    if (sort) {
+      const objectSort = { [sort[1]]: sort[0] };
+      query = query.sort(objectSort);
+    }
+
+    const allProducts = await query
+      .limit(Number(limit))
+      .skip(Number(page) * Number(limit));
+
+    return {
+      status: "OK",
+      message: "Success",
+      data: allProducts,
+      total: totalProduct,
+      pageCurrent: Number(page) + 1,
+      totalPage: Math.ceil(totalProduct / limit),
+    };
+  } catch (e) {
+    throw e;
+  }
+};
+
+const getAllType = async () => {
+  try {
+    const allType = await Product.distinct("type");
+    return {
+      status: "OK",
+      message: "Success",
+      data: allType,
+    };
+  } catch (e) {
+    throw e;
+  }
 };
 
 module.exports = {
@@ -163,4 +176,5 @@ module.exports = {
   getDetailsProduct,
   getAllProduct,
   deleteManyProduct,
+  getAllType,
 };
