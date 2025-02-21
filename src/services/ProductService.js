@@ -126,13 +126,15 @@ const getDetailsProduct = (id) => {
 
 const getAllProduct = async (limit = 10, page = 0, sort, filter) => {
   try {
-    const totalProduct = await Product.countDocuments();
     let query = Product.find();
 
     if (filter) {
       const label = filter[0];
-      query = query.find({ [label]: { $regex: new RegExp(filter[1], "i") } });
+      const value = filter[1]?.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query = query.find({ [label]: { $regex: new RegExp(value, "i") } });
     }
+
+    const totalProduct = await Product.countDocuments(query.getFilter());
 
     if (sort) {
       const objectSort = { [sort[1]]: sort[0] };
@@ -141,7 +143,8 @@ const getAllProduct = async (limit = 10, page = 0, sort, filter) => {
 
     const allProducts = await query
       .limit(Number(limit))
-      .skip(Number(page) * Number(limit));
+      .skip(Number(page) * Number(limit))
+      .lean();
 
     return {
       status: "OK",
@@ -152,6 +155,7 @@ const getAllProduct = async (limit = 10, page = 0, sort, filter) => {
       totalPage: Math.ceil(totalProduct / limit),
     };
   } catch (e) {
+    console.error("Error in getAllProduct:", e.message);
     throw e;
   }
 };
