@@ -38,10 +38,13 @@ app.use(
 routes(app);
 
 mongoose
-  .connect(process.env.MONGO_DB)
-  .then(() => console.log("Connect Db success!"))
-  .catch((err) => console.error("Database connection failed:", err));
+  .connect(process.env.MONGO_DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ Database Connected"))
+  .catch((err) => console.error("❌ Database Connection Error:", err));
 
 app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+  console.log(`🚀 Server running on port: ${port}`);
 });

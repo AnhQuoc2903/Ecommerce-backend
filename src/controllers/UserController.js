@@ -1,5 +1,9 @@
 const UserService = require("../services/UserService");
 const JwtService = require("../services/JwtService");
+const { OAuth2Client } = require("google-auth-library");
+const User = require("../models/UserModel");
+
+const client = new OAuth2Client(process.env.GG_CLIENT_ID);
 
 const createUser = async (req, res) => {
   try {
@@ -213,6 +217,51 @@ const logoutUser = async (req, res) => {
   }
 };
 
+const verifyToken = async (token) => {
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GG_CLIENT_ID,
+  });
+  return ticket.getPayload();
+};
+
+const googleAuth = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res
+        .status(400)
+        .json({ status: "ERR", message: "Token is required" });
+    }
+
+    const payload = await verifyToken(token);
+    const { email, name, picture } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({ name, email, avatar: picture });
+    }
+
+    const accessToken = JwtService.generateAccessToken({ id: user._id });
+    const refreshToken = JwtService.generateRefreshToken({ id: user._id });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
+    return res.status(200).json({ status: "OK", accessToken, user });
+  } catch (e) {
+    return res.status(500).json({
+      status: "ERR",
+      message: "Google Authentication failed",
+      error: e.message,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -223,4 +272,5 @@ module.exports = {
   refreshToken,
   logoutUser,
   deleteManyUser,
+  googleAuth,
 };
