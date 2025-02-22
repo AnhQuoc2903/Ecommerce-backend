@@ -124,7 +124,7 @@ const getDetailsProduct = (id) => {
   });
 };
 
-const getAllProduct = async (limit = 10, page = 0, sort, filter) => {
+const getAllProduct = async (limit, page = 0, sort, filter) => {
   try {
     let query = Product.find();
 
