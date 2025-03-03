@@ -4,23 +4,46 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const authMiddleWare = (req, res, next) => {
-  const token = req.headers.token?.split(" ")[1];
-  jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
-    if (err) {
-      return res.status(404).json({
+  try {
+    const token = req.headers.token?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({
         status: "ERROR",
-        message: "The authentication rr",
+        message: "No token provided",
       });
     }
-    if (user?.isAdmin) {
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({
+            status: "ERROR",
+            message: "Token expired, please login again",
+          });
+        }
+        return res.status(403).json({
+          status: "ERROR",
+          message: "Invalid token",
+        });
+      }
+
+      if (!user?.isAdmin) {
+        return res.status(403).json({
+          status: "ERROR",
+          message: "You are not authorized",
+        });
+      }
+
+      req.user = user;
       next();
-    } else {
-      return res.status(404).json({
-        message: "The authentication",
-        status: "ERROR",
-      });
-    }
-  });
+    });
+  } catch (error) {
+    console.error("Middleware Error:", error);
+    return res.status(500).json({
+      status: "ERROR",
+      message: "Internal server error",
+    });
+  }
 };
 
 const authUserMiddleWare = (req, res, next) => {
@@ -33,7 +56,6 @@ const authUserMiddleWare = (req, res, next) => {
         message: "The authentication",
       });
     }
-    console.log("user", user);
     if (user?.isAdmin || user?.id === userId) {
       next();
     } else {
