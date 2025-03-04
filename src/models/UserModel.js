@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
     avatar: { type: String },
     gender: { type: String },
     dob: { type: Date },
+    city: { type: String, require: true },
   },
   {
     timestamps: true,

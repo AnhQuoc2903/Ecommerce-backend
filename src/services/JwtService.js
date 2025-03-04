@@ -9,7 +9,7 @@ const generateAccessToken = (payload) => {
       ...payload,
     },
     process.env.ACCESS_TOKEN,
-    { expiresIn: "30s" }
+    { expiresIn: "15d" }
   );
   return access_token;
 };
