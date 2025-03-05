@@ -2,6 +2,13 @@ const UserService = require("../services/UserService");
 const JwtService = require("../services/JwtService");
 const { OAuth2Client } = require("google-auth-library");
 const User = require("../models/UserModel");
+const bcrypt = require("bcryptjs");
+
+const nodeCrypto = require("crypto");
+
+const token = nodeCrypto.randomBytes(20).toString("hex");
+
+const nodemailer = require("nodemailer");
 
 const client = new OAuth2Client(process.env.GG_CLIENT_ID);
 
@@ -262,6 +269,130 @@ const googleAuth = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res
+        .status(400)
+        .json({ status: "ERR", message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ status: "ERR", message: "User not found" });
+    }
+
+    const token = nodeCrypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000;
+
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: process.env.EMAIL_USER,
+      subject: "Password Reset Request",
+      text: `You are receiving this because you (or someone else) have requested to reset your password.
+Please click on the following link, or paste it into your browser to complete the process:
+http://localhost:3000/reset-password/${token}
+If you did not request this, please ignore this email.`,
+    };
+
+    transporter.sendMail(mailOptions, (err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ status: "ERR", message: "Failed to send email" });
+      }
+      res
+        .status(200)
+        .json({ status: "OK", message: "Password reset email sent" });
+    });
+  } catch (e) {
+    res.status(500).json({ status: "ERR", message: e.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password, confirmPassword } = req.body;
+
+    if (!password || !confirmPassword) {
+      return res
+        .status(400)
+        .json({ status: "ERR", message: "Password is required" });
+    }
+    if (password !== confirmPassword) {
+      return res
+        .status(400)
+        .json({ status: "ERR", message: "Passwords do not match" });
+    }
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ status: "ERR", message: "Invalid or expired token" });
+    }
+
+    user.password = bcrypt.hashSync(password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+    res.status(200).json({ status: "OK", message: "Password has been reset" });
+  } catch (e) {
+    res.status(500).json({ status: "ERR", message: e.message });
+  }
+};
+
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.params.id; // Lấy từ URL thay vì req.user.id
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Vui lòng nhập đầy đủ thông tin",
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "Mật khẩu mới không trùng khớp",
+      });
+    }
+
+    const response = await UserService.changePassword(
+      userId,
+      oldPassword,
+      newPassword
+    );
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      status: "ERR",
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -273,4 +404,7 @@ module.exports = {
   logoutUser,
   deleteManyUser,
   googleAuth,
+  forgotPassword,
+  resetPassword,
+  changePassword,
 };

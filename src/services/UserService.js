@@ -178,6 +178,38 @@ const getDetailsUser = (id) => {
   });
 };
 
+const changePassword = (id, oldPassword, newPassword) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        return resolve({
+          status: "ERR",
+          message: "Người dùng không tồn tại",
+        });
+      }
+
+      const isMatch = bcrypt.compareSync(oldPassword, user.password);
+      if (!isMatch) {
+        return resolve({
+          status: "ERR",
+          message: "Mật khẩu cũ không chính xác",
+        });
+      }
+
+      user.password = bcrypt.hashSync(newPassword, 10);
+      await user.save();
+
+      resolve({
+        status: "OK",
+        message: "Đổi mật khẩu thành công",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -186,4 +218,5 @@ module.exports = {
   getAllUser,
   getDetailsUser,
   deleteManyUser,
+  changePassword,
 };

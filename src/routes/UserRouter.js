@@ -25,5 +25,12 @@ router.get(
 router.post("/delete-many", authMiddleWare, userController.deleteManyUser);
 router.post("/refresh-token", userController.refreshToken);
 router.post("/google-auth", userController.googleAuth);
+router.post("/forgot-password", userController.forgotPassword);
+router.post("/reset-password/:token", userController.resetPassword);
+router.put(
+  "/change-password/:id",
+  authUserMiddleWare,
+  userController.changePassword
+);
 
 module.exports = router;
