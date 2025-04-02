@@ -32,5 +32,6 @@ router.put(
   authUserMiddleWare,
   userController.changePassword
 );
+router.put("/block-user/:id", authMiddleWare, userController.blockUser);
 
 module.exports = router;

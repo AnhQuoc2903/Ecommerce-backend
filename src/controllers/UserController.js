@@ -57,6 +57,22 @@ const loginUser = async (req, res) => {
         message: "The input is email",
       });
     }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        status: "ERR",
+        message: "User not found",
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({
+        status: "ERR",
+        message: "Tài khoản của bạn đã bị khóa!",
+      });
+    }
+
     const response = await UserService.loginUser(req.body);
     const { refresh_token, ...newResponse } = response;
     res.cookie("refresh_token", refresh_token, {
@@ -301,10 +317,11 @@ const forgotPassword = async (req, res) => {
       to: user.email,
       from: process.env.EMAIL_USER,
       subject: "Password Reset Request",
-      text: `You are receiving this because you (or someone else) have requested to reset your password.
-Please click on the following link, or paste it into your browser to complete the process:
+      text: `Bạn nhận được email này vì bạn (hoặc ai đó) đã yêu cầu đặt lại mật khẩu của mình.
+Vui lòng nhấp vào liên kết sau hoặc dán nó vào trình duyệt của bạn để hoàn tất quá trình:
 http://localhost:3000/reset-password/${token}
-If you did not request this, please ignore this email.`,
+
+Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này.`,
     };
 
     transporter.sendMail(mailOptions, (err) => {
@@ -393,6 +410,28 @@ const changePassword = async (req, res) => {
   }
 };
 
+const blockUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { isBlocked } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        status: "ERR",
+        message: "User ID is required",
+      });
+    }
+
+    const response = await UserService.blockUser(userId, isBlocked);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(500).json({
+      status: "ERR",
+      message: e.message,
+    });
+  }
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -407,4 +446,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  blockUser,
 };

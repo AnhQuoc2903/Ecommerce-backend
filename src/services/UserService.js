@@ -51,6 +51,14 @@ const loginUser = (userLogin) => {
           message: "The user is not defined",
         });
       }
+
+      if (checkUser.isBlocked) {
+        return resolve({
+          status: "ERR",
+          message: "Tài khoản của bạn đã bị khóa!",
+        });
+      }
+
       const comparePassword = bcrypt.compareSync(password, checkUser.password);
       if (!comparePassword) {
         resolve({
@@ -210,6 +218,33 @@ const changePassword = (id, oldPassword, newPassword) => {
   });
 };
 
+const blockUser = (id, isBlocked) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        resolve({
+          status: "ERR",
+          message: "User not found",
+        });
+      }
+
+      user.isBlocked = isBlocked;
+      await user.save();
+
+      resolve({
+        status: "OK",
+        message: `User has been ${
+          isBlocked ? "blocked" : "unblocked"
+        } successfully`,
+        data: user,
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -219,4 +254,5 @@ module.exports = {
   getDetailsUser,
   deleteManyUser,
   changePassword,
+  blockUser,
 };

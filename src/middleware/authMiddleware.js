@@ -1,11 +1,13 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const User = require("../models/UserModel");
 
 dotenv.config();
 
-const authMiddleWare = (req, res, next) => {
+const authMiddleWare = async (req, res, next) => {
   try {
     const token = req.headers.token?.split(" ")[1];
+
     if (!token) {
       return res.status(401).json({
         status: "ERROR",
@@ -13,7 +15,7 @@ const authMiddleWare = (req, res, next) => {
       });
     }
 
-    jwt.verify(token, process.env.ACCESS_TOKEN, (err, user) => {
+    jwt.verify(token, process.env.ACCESS_TOKEN, async (err, decodedUser) => {
       if (err) {
         if (err.name === "TokenExpiredError") {
           return res.status(401).json({
@@ -27,10 +29,18 @@ const authMiddleWare = (req, res, next) => {
         });
       }
 
-      if (!user?.isAdmin) {
+      const user = await User.findById(decodedUser.id);
+      if (!user) {
+        return res.status(404).json({
+          status: "ERROR",
+          message: "User not found",
+        });
+      }
+
+      if (user.isBlocked) {
         return res.status(403).json({
           status: "ERROR",
-          message: "You are not authorized",
+          message: "Tài khoản của bạn đã bị khóa!",
         });
       }
 
@@ -48,7 +58,12 @@ const authMiddleWare = (req, res, next) => {
 
 const authUserMiddleWare = (req, res, next) => {
   const token = req.headers.token?.split(" ")[1];
-  const userId = req.params.id;
+  if (!token) {
+    return res.status(401).json({
+      status: "ERROR",
+      message: "Access token is required",
+    });
+  }
 
   jwt.verify(token, process.env.ACCESS_TOKEN, function (err, user) {
     if (err) {
@@ -58,15 +73,20 @@ const authUserMiddleWare = (req, res, next) => {
       });
     }
 
-    if (user?.isAdmin || user?.id === userId) {
-      req.user = user;
-      next();
-    } else {
-      return res.status(403).json({
-        status: "ERROR",
-        message: "Unauthorized access",
-      });
-    }
+    req.user = user;
+    next();
+
+    // const userId = req.params.id;
+
+    // if (user.isAdmin || String(user.id) === String(userId)) {
+    //   req.user = user;
+    //   next();
+    // } else {
+    //   return res.status(403).json({
+    //     status: "ERROR",
+    //     message: "Unauthorized access",
+    //   });
+    // }
   });
 };
 
