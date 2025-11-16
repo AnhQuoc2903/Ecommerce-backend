@@ -13,6 +13,7 @@ const createOrder = (newOrder) => {
       city,
       phone,
       user,
+      discount,
     } = newOrder;
     try {
       const createOrder = await Order.create({
@@ -25,6 +26,7 @@ const createOrder = (newOrder) => {
         },
         paymentMethod,
         itemsPrice,
+        discount,
         shippingPrice,
         totalPrice,
         user: user,

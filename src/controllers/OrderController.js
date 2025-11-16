@@ -11,6 +11,7 @@ const createOrder = async (req, res) => {
       address,
       city,
       phone,
+      discount,
     } = req.body;
     if (
       !paymentMethod ||
