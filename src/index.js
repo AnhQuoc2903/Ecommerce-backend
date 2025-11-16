@@ -19,7 +19,7 @@ app.use(cookieParser());
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://ecommerce-fontend-b7cx.vercel.app",
+  "https://ecommerce-fontend-b1cx.vercel.app",
 ];
 
 app.use(
